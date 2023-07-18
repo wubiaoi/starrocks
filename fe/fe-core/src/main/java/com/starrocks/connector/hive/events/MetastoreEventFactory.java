@@ -15,7 +15,6 @@
 
 package com.starrocks.connector.hive.events;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.starrocks.connector.hive.CacheUpdateProcessor;
@@ -55,25 +54,8 @@ public class MetastoreEventFactory implements EventFactory {
     @Override
     public List<MetastoreEvent> get(NotificationEvent event, CacheUpdateProcessor cacheProcessor,
                                     String catalogName) {
-        Preconditions.checkNotNull(event.getEventType());
-        MetastoreEventType metastoreEventType = MetastoreEventType.from(event.getEventType());
-        switch (metastoreEventType) {
-            case CREATE_TABLE:
-                return CreateTableEvent.getEvents(event, cacheProcessor, catalogName);
-            case ALTER_TABLE:
-                return AlterTableEvent.getEvents(event, cacheProcessor, catalogName);
-            case DROP_TABLE:
-                return DropTableEvent.getEvents(event, cacheProcessor, catalogName);
-            case ALTER_PARTITION:
-                return AlterPartitionEvent.getEvents(event, cacheProcessor, catalogName);
-            case DROP_PARTITION:
-                return DropPartitionEvent.getEvents(event, cacheProcessor, catalogName);
-            case INSERT:
-                return InsertEvent.getEvents(event, cacheProcessor, catalogName);
-            default:
-                // ignore all the unknown events by creating a IgnoredEvent
-                return Lists.newArrayList(new IgnoredEvent(event, cacheProcessor, catalogName));
-        }
+        // ignore all the unknown events by creating a IgnoredEvent
+        return Lists.newArrayList(new IgnoredEvent(event, cacheProcessor, catalogName));
     }
 
     List<MetastoreEvent> getFilteredEvents(List<NotificationEvent> events,
@@ -138,9 +120,6 @@ public class MetastoreEventFactory implements EventFactory {
                         batchEvents.put(hivePartitionName, batchEvent.addToBatchEvents(metastoreTableEvent));
                     } else {
                         batchEvents.put(hivePartitionName, metastoreTableEvent);
-                    }
-                    if (batchEvent instanceof AlterTableEvent && ((AlterTableEvent) batchEvent).isSchemaChange()) {
-                        return Lists.newArrayList(batchEvents.values());
                     }
                     break;
                 case DROP_TABLE:
