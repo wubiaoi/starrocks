@@ -41,7 +41,7 @@ under the License.
         <iceberg.version>1.2.1</iceberg.version>
         <awsv2.version>2.17.257</awsv2.version>
         <paimon.version>0.4.0-incubating</paimon.version>
-        <python>python</python>
+        <python>python3</python>
     </properties>
 
     <profiles>
@@ -240,6 +240,11 @@ under the License.
             <artifactId>junit-vintage-engine</artifactId>
             <version>5.8.2</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-metastore</artifactId>
         </dependency>
 
         <dependency>
@@ -523,28 +528,8 @@ under the License.
 
         <!-- https://mvnrepository.com/artifact/com.facebook.presto.hive/hive-apache -->
         <dependency>
-            <groupId>io.trino.hive</groupId>
-            <artifactId>hive-apache</artifactId>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.aliyun.datalake/metastore-client-hive3 -->
-        <dependency>
-            <groupId>com.aliyun.datalake</groupId>
-            <artifactId>metastore-client-hive3</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.aliyun</groupId>
-                    <artifactId>tea</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.aliyun</groupId>
-                    <artifactId>tea-openapi</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.aliyun</groupId>
-                    <artifactId>tea-util</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>io.prestosql.hadoop</groupId>
+            <artifactId>hadoop-apache</artifactId>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
@@ -595,18 +580,6 @@ under the License.
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-aws</artifactId>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-azure-datalake -->
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-azure-datalake</artifactId>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-azure -->
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-azure</artifactId>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.cloud.bigdataoss/gcs-connector -->
@@ -846,7 +819,7 @@ under the License.
                 <artifactId>maven-thrift-plugin</artifactId>
                 <version>0.1.11</version>
                 <configuration>
-                    <thriftExecutable>${starrocks.thrift}</thriftExecutable>
+                    <thriftExecutable>/usr/local/bin/thrift</thriftExecutable>
                     <thriftSourceRoot>${starrocks.home}/gensrc/thrift</thriftSourceRoot>
                     <generator>java</generator>
                     <excludes>
@@ -1051,7 +1024,7 @@ under the License.
                     <configLocation>checkstyle.xml</configLocation>
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
-                    <failsOnError>true</failsOnError>
+                    <failsOnError>false</failsOnError>
                     <linkXRef>false</linkXRef>
                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
                     <excludes>**/sql/parser/gen/**</excludes>

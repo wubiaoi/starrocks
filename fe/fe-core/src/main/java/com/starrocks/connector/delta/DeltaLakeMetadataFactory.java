@@ -20,7 +20,6 @@ import com.starrocks.connector.hive.CachingHiveMetastore;
 import com.starrocks.connector.hive.CachingHiveMetastoreConf;
 import com.starrocks.connector.hive.HiveMetastoreOperations;
 import com.starrocks.connector.hive.IHiveMetastore;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 import static com.starrocks.connector.hive.CachingHiveMetastore.createQueryLevelInstance;
 
@@ -36,7 +35,6 @@ public class DeltaLakeMetadataFactory {
         this.metastore = metastore;
         this.perQueryMetastoreMaxNum = hmsConf.getPerQueryCacheMaxNum();
         this.hdfsEnvironment = hdfsEnvironment;
-        this.hdfsEnvironment.getConfiguration().set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), uri);
     }
 
     public DeltaLakeMetadata create() {

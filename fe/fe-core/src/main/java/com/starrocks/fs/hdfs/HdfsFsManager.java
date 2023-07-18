@@ -17,7 +17,6 @@
 
 package com.starrocks.fs.hdfs;
 
-import com.amazonaws.util.AwsHostNameUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.starrocks.common.Config;
@@ -63,31 +62,8 @@ class ConfigurationWrap extends Configuration {
     private static final Logger LOG = LogManager.getLogger(ConfigurationWrap.class);
 
     public String parseRegionFromEndpoint(TObjectStoreType tObjectStoreType, String endPoint) {
-        if (tObjectStoreType == TObjectStoreType.S3) {
-            return AwsHostNameUtils.parseRegionFromAwsPartitionPattern(endPoint);
-        } else if (tObjectStoreType == TObjectStoreType.OSS) {
-            String[] hostSplit = endPoint.split("\\.");
-            String regionId = hostSplit[0];
-            if (regionId.contains("-internal")) {
-                return regionId.substring(0, regionId.length() - "-internal".length());
-            } else {
-                return regionId;
-            }
-        } else if (tObjectStoreType == TObjectStoreType.KS3) {
-            String[] hostSplit = endPoint.split("\\.");
-            String regionId = hostSplit[0];
-            if (regionId.contains("-internal")) {
-                return regionId.substring(4, regionId.length() - "-internal".length() - 4);
-            } else {
-                return regionId.substring(4);
-            }
-        } else if (tObjectStoreType == TObjectStoreType.TOS) {
-            String[] hostSplit = endPoint.split("\\.");
-            return hostSplit[0].replace("tos-s3-", "").replace("tos-", "");
-        } else {
-            String[] hostSplit = endPoint.split("\\.");
-            return hostSplit[1];
-        }
+        String[] hostSplit = endPoint.split("\\.");
+        return hostSplit[1];
     }
 
     public void convertObjectStoreConfToProperties(String path, THdfsProperties tProperties, TObjectStoreType tObjectStoreType) {
@@ -1385,12 +1361,12 @@ public class HdfsFsManager {
     public void pwrite(TBrokerFD fd, long offset, byte[] data) throws UserException {
         FSDataOutputStream fsDataOutputStream = ioStreamManager.getFsDataOutputStream(fd);
         synchronized (fsDataOutputStream) {
-            long currentStreamOffset = fsDataOutputStream.getPos();
-            if (currentStreamOffset != offset) {
-                throw new UserException("current outputstream offset is " + currentStreamOffset
-                        + " not equal to request " + offset);
-            }
             try {
+                long currentStreamOffset = fsDataOutputStream.getPos();
+                if (currentStreamOffset != offset) {
+                    throw new UserException("current outputstream offset is " + currentStreamOffset
+                            + " not equal to request " + offset);
+                }
                 fsDataOutputStream.write(data);
             } catch (IOException e) {
                 LOG.error("errors while write file " + fd + " to output stream", e);

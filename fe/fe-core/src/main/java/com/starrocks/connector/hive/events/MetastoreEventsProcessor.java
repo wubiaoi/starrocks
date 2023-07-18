@@ -24,8 +24,6 @@ import com.starrocks.server.CatalogMgr;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
-import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,9 +57,6 @@ public class MetastoreEventsProcessor extends FrontendDaemon {
     private static final Logger LOG = LogManager.getLogger(MetastoreEventsProcessor.class);
     public static final String HMS_ADD_THRIFT_OBJECTS_IN_EVENTS_CONFIG_KEY =
             "hive.metastore.notifications.add.thrift.objects";
-
-    // for deserializing from JSON strings from metastore event
-    private static final MessageDeserializer MESSAGE_DESERIALIZER = new JSONMessageDeserializer();
 
     // thread pool for processing the metastore events
     private final ExecutorService eventsProcessExecutor =
@@ -176,11 +171,6 @@ public class MetastoreEventsProcessor extends FrontendDaemon {
             try {
                 event.process();
             } catch (Exception e) {
-                if (event instanceof BatchEvent) {
-                    cacheProcessor.setLastSyncedEventId(((BatchEvent<?>) event).getFirstEventId() - 1);
-                } else {
-                    cacheProcessor.setLastSyncedEventId(event.getEventId() - 1);
-                }
                 throw e;
             }
         }
@@ -233,9 +223,5 @@ public class MetastoreEventsProcessor extends FrontendDaemon {
                         events.get(0).getEventId(), events.get(events.size() - 1).getEventId(), ex);
             }
         }
-    }
-
-    public static MessageDeserializer getMessageDeserializer() {
-        return MESSAGE_DESERIALIZER;
     }
 }

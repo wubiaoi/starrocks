@@ -47,11 +47,11 @@ under the License.
         <spark.version>3.4.0</spark.version>
         <tomcat.version>8.5.70</tomcat.version>
         <parquet.version>1.10.1</parquet.version>
-        <hadoop.version>3.3.6</hadoop.version>
+        <hadoop.version>2.7.1-mt-1.0.32</hadoop.version>
         <gcs.connector.version>hadoop3-2.2.11</gcs.connector.version>
         <skip.plugin>false</skip.plugin>
         <hudi.version>0.12.2</hudi.version>
-        <hive-apache.version>3.1.2-13</hive-apache.version>
+        <hive-apache.version>3.1.2-mt-SNAPSHOT</hive-apache.version>
         <dlf-metastore-client.version>0.2.14</dlf-metastore-client.version>
         <sonar.organization>starrocks</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -514,19 +514,12 @@ under the License.
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/io.trino.hive/hive-apache -->
-            <dependency>
-                <groupId>io.trino.hive</groupId>
-                <artifactId>hive-apache</artifactId>
-                <version>${hive-apache.version}</version>
-            </dependency>
 
-            <!-- https://mvnrepository.com/artifact/com.aliyun.datalake/metastore-client-hive3 -->
             <dependency>
-                <groupId>com.aliyun.datalake</groupId>
-                <artifactId>metastore-client-hive3</artifactId>
-                <version>${dlf-metastore-client.version}</version>
+                <groupId>io.prestosql.hadoop</groupId>
+                <artifactId>hadoop-apache</artifactId>
+                <version>2.7.7-1-mt-SNAPSHOT</version>
             </dependency>
-
 
             <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-common -->
             <dependency>
@@ -624,20 +617,6 @@ under the License.
                 <version>${hadoop.version}</version>
             </dependency>
 
-            <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-azure-datalake -->
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-azure-datalake</artifactId>
-                <version>${hadoop.version}</version>
-            </dependency>
-
-            <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-azure -->
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-azure</artifactId>
-                <version>${hadoop.version}</version>
-            </dependency>
-
             <!-- https://mvnrepository.com/artifact/com.google.cloud.bigdataoss/gcs-connector -->
             <dependency>
                 <groupId>com.google.cloud.bigdataoss</groupId>
@@ -651,6 +630,12 @@ under the License.
                 <groupId>com.fasterxml.uuid</groupId>
                 <artifactId>java-uuid-generator</artifactId>
                 <version>4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-metastore</artifactId>
+                <version>1.2.1-mt2-SNAPSHOT</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/org.apache.hudi/hudi-common -->
@@ -720,9 +705,6 @@ under the License.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.1.1</version>
-                <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
-                </configuration>
             </plugin>
         </plugins>
     </reporting>

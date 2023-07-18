@@ -16,7 +16,6 @@ package com.starrocks.credential;
 
 import com.staros.proto.FileStoreInfo;
 import com.starrocks.credential.aliyun.AliyunCloudConfigurationFactory;
-import com.starrocks.credential.aws.AWSCloudConfigurationFactory;
 import com.starrocks.credential.azure.AzureCloudConfigurationFactory;
 import com.starrocks.credential.gcp.GCPCloudConfigurationFactory;
 import com.starrocks.credential.hdfs.HDFSCloudConfigurationFactory;
@@ -30,7 +29,7 @@ import java.util.Map;
 
 public abstract class CloudConfigurationFactory {
     public static CloudConfiguration buildCloudConfigurationForStorage(Map<String, String> properties) {
-        CloudConfigurationFactory factory = new AWSCloudConfigurationFactory(properties);
+        CloudConfigurationFactory factory = new HDFSCloudConfigurationFactory(properties);
         CloudConfiguration cloudConfiguration = factory.buildForStorage();
         if (cloudConfiguration != null) {
             return cloudConfiguration;
@@ -74,7 +73,7 @@ public abstract class CloudConfigurationFactory {
             copiedProperties.put(CloudConfigurationConstants.AWS_S3_SECRET_KEY, sessionSk);
             copiedProperties.put(CloudConfigurationConstants.AWS_S3_SESSION_TOKEN, sessionToken);
             copiedProperties.put(CloudConfigurationConstants.AWS_S3_REGION, region);
-            CloudConfigurationFactory factory = new AWSCloudConfigurationFactory(copiedProperties);
+            CloudConfigurationFactory factory = new HDFSCloudConfigurationFactory(copiedProperties);
             CloudConfiguration cloudConfiguration = factory.buildForStorage();
             if (cloudConfiguration != null) {
                 return cloudConfiguration;
