@@ -136,7 +136,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     private TTransport transport = null;
     private boolean isConnected = false;
     private URI[] metastoreUris;
-    protected final Configuration conf;
+    protected final HiveConf conf;
     // Keep a copy of HiveConf so if Session conf changes, we may need to get a new HMS client.
     private String tokenStrForm;
     private final boolean localMetaStore;
@@ -148,22 +148,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     private int retries = 5;
     private long retryDelaySeconds = 0;
 
-    public HiveMetaStoreClient(Configuration conf) throws MetaException {
+    public HiveMetaStoreClient(HiveConf conf) throws MetaException {
         this(conf, null, true);
     }
 
-    public HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader) throws MetaException {
+    public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader) throws MetaException {
         this(conf, hookLoader, true);
     }
 
-    public HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
+    public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
             throws MetaException {
 
         if (conf == null) {
-            conf = new Configuration();
+            conf = new HiveConf();
             this.conf = conf;
         } else {
-            this.conf = new Configuration(conf);
+            this.conf = new HiveConf(conf);
         }
         UserGroupInformation.setConfiguration(conf);
         UserGroupInformation.setLoginUser(null);
