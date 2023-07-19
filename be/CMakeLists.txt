@@ -220,7 +220,7 @@ add_library(mysql STATIC IMPORTED)
 set_target_properties(mysql PROPERTIES IMPORTED_LOCATION ${THIRDPARTY_DIR}/lib/mariadb/libmariadbclient.a)
 
 add_library(hdfs STATIC IMPORTED GLOBAL)
-set_target_properties(hdfs PROPERTIES IMPORTED_LOCATION ${THIRDPARTY_DIR}/lib/libhdfs.a)
+set_target_properties(hdfs PROPERTIES IMPORTED_LOCATION /root/work/hadoop/lib/native/libhdfs.a)
 
 # Allow FindOpenSSL() to find correct static libraries
 set(OPENSSL_ROOT_DIR ${THIRDPARTY_DIR} CACHE STRING "root directory of an OpenSSL installation")
