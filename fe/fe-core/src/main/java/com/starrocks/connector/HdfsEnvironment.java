@@ -17,6 +17,7 @@ package com.starrocks.connector;
 import com.starrocks.credential.CloudConfiguration;
 import com.starrocks.credential.CloudConfigurationFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.HdfsConfiguration;
 
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class HdfsEnvironment {
         private final Configuration configuration;
 
         public HdfsConfiguration() {
-            this.configuration = new Configuration();
+            this.configuration = new org.apache.hadoop.hdfs.HdfsConfiguration();
         }
 
         public void applyToCloudConfiguration(CloudConfiguration cloudConfiguration) {
