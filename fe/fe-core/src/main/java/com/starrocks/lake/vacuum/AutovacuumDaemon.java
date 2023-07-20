@@ -32,7 +32,7 @@ import com.starrocks.rpc.LakeService;
 import com.starrocks.rpc.RpcException;
 import com.starrocks.server.GlobalStateMgr;
 import com.starrocks.system.ComputeNode;
-import org.apache.hadoop.util.BlockingThreadPoolExecutorService;
+import org.apache.hadoop.fs.s3a.BlockingThreadPoolExecutorService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,8 +55,8 @@ public class AutovacuumDaemon extends FrontendDaemon {
     private static final long MILLISECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
  
     private final Set<Long> vacuumingPartitions = Sets.newConcurrentHashSet();
-    private final BlockingThreadPoolExecutorService executorService = BlockingThreadPoolExecutorService.newInstance(
-            Config.lake_autovacuum_parallel_partitions, 0, 1, TimeUnit.HOURS, "autovacuum");
+    private final BlockingThreadPoolExecutorService executorService =
+            new BlockingThreadPoolExecutorService(Config.lake_autovacuum_parallel_partitions, 0, 1, TimeUnit.HOURS, "autovacuum");
 
     public AutovacuumDaemon() {
         super("autovacuum", 2000);
