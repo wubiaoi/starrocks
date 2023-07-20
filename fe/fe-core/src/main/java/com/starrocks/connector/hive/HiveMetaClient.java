@@ -68,6 +68,8 @@ public class HiveMetaClient {
 
     public static HiveMetaClient createHiveMetaClient(Map<String, String> properties) {
         HiveConf conf = new HiveConf();
+        conf.addResource("hdfs-site.xml");
+        conf.addResource("core-site.xml");
         properties.forEach(conf::set);
         if (properties.containsKey(HIVE_METASTORE_URIS)) {
             conf.set(HiveConf.ConfVars.METASTOREURIS.varname, properties.get(HIVE_METASTORE_URIS));
