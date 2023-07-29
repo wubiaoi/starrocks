@@ -58,6 +58,10 @@
         return _env->Call##CallType##Method(obj, _val_##prim_clazz);                             \
     }
 
+JNIEnv* getJNIEnv() {
+    return NULL;
+}
+
 namespace starrocks {
 
 constexpr const char* CLASS_UDF_HELPER_NAME = "com.starrocks.udf.UDFHelper";

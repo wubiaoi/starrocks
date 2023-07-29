@@ -29,7 +29,7 @@
 // 2. libhdfs depends on this function and does some initialization,
 // if the JVM has already created it, it won't create it anymore.
 // If we skip this function call will cause libhdfs to miss some initialization operations
-extern "C" JNIEnv* getJNIEnv(void);
+JNIEnv* getJNIEnv();
 
 #define DEFINE_JAVA_PRIM_TYPE(TYPE) \
     jclass _class_##TYPE;           \

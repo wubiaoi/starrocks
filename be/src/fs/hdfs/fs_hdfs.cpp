@@ -191,7 +191,7 @@ StatusOr<std::unique_ptr<io::NumericStatistics>> HdfsInputStream::get_numeric_st
         int64_t open_time_ns = _handle->open_time_ns();
         int64_t open_time_ms = open_time_ns * 0.000001;
         stats->append("OpenTimeMs", open_time_ms);
-
+/*
         struct hdfsReadStatistics* hdfs_statistics = nullptr;
         auto r = hdfsFileGetReadStatistics(file, &hdfs_statistics);
         if (r == -1) {
@@ -203,6 +203,7 @@ StatusOr<std::unique_ptr<io::NumericStatistics>> HdfsInputStream::get_numeric_st
         stats->append("TotalShortCircuitBytesRead", hdfs_statistics->totalShortCircuitBytesRead);
         stats->append("TotalZeroCopyBytesRead", hdfs_statistics->totalZeroCopyBytesRead);
         hdfsFileFreeReadStatistics(hdfs_statistics);
+*/
         return Status::OK();
     });
     Status st = ret->get_future().get();

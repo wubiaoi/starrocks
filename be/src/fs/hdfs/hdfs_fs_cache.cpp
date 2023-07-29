@@ -48,7 +48,7 @@ static const std::map<std::string, std::string> get_cloud_properties(const FSOpt
 
 static Status create_hdfs_fs_handle(const std::string& namenode, std::shared_ptr<HdfsFsClient> hdfs_client,
                                     const FSOptions& options) {
-    auto hdfs_builder = hdfsNewBuilder();
+/*    auto hdfs_builder = hdfsNewBuilder();
     hdfsBuilderSetNameNode(hdfs_builder, namenode.c_str());
     const THdfsProperties* properties = options.hdfs_properties();
     if (properties != nullptr) {
@@ -69,6 +69,12 @@ static Status create_hdfs_fs_handle(const std::string& namenode, std::shared_ptr
         }
     }
     hdfs_client->hdfs_fs = hdfsBuilderConnect(hdfs_builder);
+    if (hdfs_client->hdfs_fs == nullptr) {
+        return Status::InternalError(strings::Substitute("fail to connect hdfs namenode, namenode=$0, err=$1", namenode,
+                                                         get_hdfs_err_msg()));
+    }
+*/
+    hdfs_client->hdfs_fs = hdfsConnect("dfsrouter", 0);
     if (hdfs_client->hdfs_fs == nullptr) {
         return Status::InternalError(strings::Substitute("fail to connect hdfs namenode, namenode=$0, err=$1", namenode,
                                                          get_hdfs_err_msg()));

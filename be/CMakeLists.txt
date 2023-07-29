@@ -219,8 +219,8 @@ set_target_properties(thriftnb PROPERTIES IMPORTED_LOCATION ${THIRDPARTY_DIR}/li
 add_library(mysql STATIC IMPORTED)
 set_target_properties(mysql PROPERTIES IMPORTED_LOCATION ${THIRDPARTY_DIR}/lib/mariadb/libmariadbclient.a)
 
-add_library(hdfs STATIC IMPORTED GLOBAL)
-set_target_properties(hdfs PROPERTIES IMPORTED_LOCATION /root/work/hadoop/lib/native/libhdfs.a)
+#add_library(hdfs STATIC IMPORTED GLOBAL)
+#set_target_properties(hdfs PROPERTIES IMPORTED_LOCATION /root/work/hdfs3/hdfs/libhdfs3.a)
 
 # Allow FindOpenSSL() to find correct static libraries
 set(OPENSSL_ROOT_DIR ${THIRDPARTY_DIR} CACHE STRING "root directory of an OpenSSL installation")
@@ -709,6 +709,13 @@ set(STARROCKS_DEPENDENCIES ${STARROCKS_DEPENDENCIES}
     hdfs
     jvm
 )
+
+add_library(hdfs SHARED IMPORTED)
+#FILE(GLOB_RECURSE LIB_HDFS /root/work/hadoop-common/hadoop-hdfs-project/hadoop-hdfs/src/main/native/libhdfs3/build/output/lib/*.so)
+FILE(GLOB_RECURSE LIB_HDFS /root/work/hdfs3/hdfs/*.so)
+set_target_properties(hdfs PROPERTIES IMPORTED_LOCATION ${LIB_HDFS})
+include_directories(/root/work/hdfs3/include)
+
 set(JAVA_HOME ${THIRDPARTY_DIR}/open_jdk/)
 add_library(jvm SHARED IMPORTED)
 FILE(GLOB_RECURSE LIB_JVM ${JAVA_HOME}/jre/lib/*/libjvm.so)
