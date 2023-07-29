@@ -18,11 +18,20 @@
 #include <hdfs/hdfs.h>
 
 #include <string>
+#include <random>
 
 #include "gutil/strings/substitute.h"
 #include "util/error_util.h"
 
 namespace starrocks {
+
+std::random_device rd;
+std::mt19937 gen(rd());
+std::string fs_rand_key()
+{
+    std::uniform_int_distribution<> dist(0, 30);
+    return std::to_string(dist(gen));
+}
 
 std::string get_hdfs_err_msg() {
     std::string error_msg = get_str_err_msg();
@@ -37,8 +46,9 @@ std::string get_hdfs_err_msg() {
     return ss.str();
 }
 
-Status get_namenode_from_path(const std::string& path, std::string* namenode) {
+Status get_namenode_from_path(const std::string& path, std::string* namenode, std::string* relative_path) {
     const std::string local_fs("file:/");
+    const std::string view_fs("viewfs://hadoop-meituan");
     auto n = path.find("://");
 
     if (n == std::string::npos) {
@@ -49,17 +59,23 @@ Status get_namenode_from_path(const std::string& path, std::string* namenode) {
             // Path is not qualified, so use the default FS.
             *namenode = "default";
         }
+        *relative_path = path;
     } else if (n == 0) {
         return Status::InvalidArgument(strings::Substitute("Path missing scheme: $0", path));
     } else {
         // Path is qualified, i.e. "scheme://authority/path/to/file".  Extract
         // "scheme://authority/".
-        n = path.find('/', n + 3);
+        n = path.find('/', n + 4);
         if (n == std::string::npos) {
             return Status::InvalidArgument(strings::Substitute("Path missing '/' after authority: $0", path));
         } else {
-            // Include the trailing '/' for local filesystem case, i.e. "file:///".
-            *namenode = path.substr(0, n + 1);
+            auto viewfs_pos = path.find(view_fs);
+            if (viewfs_pos == std::string::npos) {
+                *relative_path = path;
+            } else {
+                *relative_path = path.substr(viewfs_pos + view_fs.length());
+            }
+            *namenode = path.substr(0, n + 1) + fs_rand_key();
         }
     }
     return Status::OK();

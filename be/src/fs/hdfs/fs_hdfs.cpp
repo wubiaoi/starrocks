@@ -394,35 +394,37 @@ private:
 
 Status HdfsFileSystem::path_exists(const std::string& path) {
     std::string namenode;
-    RETURN_IF_ERROR(get_namenode_from_path(path, &namenode));
+    std::string relative_path;
+    RETURN_IF_ERROR(get_namenode_from_path(path, &namenode, &relative_path));
     std::shared_ptr<HdfsFsClient> hdfs_client;
     RETURN_IF_ERROR(HdfsFsCache::instance()->get_connection(namenode, hdfs_client, _options));
-    return _path_exists(hdfs_client->hdfs_fs, path);
+    return _path_exists(hdfs_client->hdfs_fs, relative_path);
 }
 
 Status HdfsFileSystem::iterate_dir(const std::string& dir, const std::function<bool(std::string_view)>& cb) {
     std::string namenode;
-    RETURN_IF_ERROR(get_namenode_from_path(dir, &namenode));
+    std::string relative_path;
+    RETURN_IF_ERROR(get_namenode_from_path(dir, &namenode, &relative_path));
     std::shared_ptr<HdfsFsClient> hdfs_client;
     RETURN_IF_ERROR(HdfsFsCache::instance()->get_connection(namenode, hdfs_client, _options));
-    Status status = _path_exists(hdfs_client->hdfs_fs, dir);
+    Status status = _path_exists(hdfs_client->hdfs_fs, relative_path);
     if (!status.ok()) {
         return status;
     }
 
     hdfsFileInfo* fileinfo;
     int numEntries;
-    fileinfo = hdfsListDirectory(hdfs_client->hdfs_fs, dir.data(), &numEntries);
+    fileinfo = hdfsListDirectory(hdfs_client->hdfs_fs, relative_path.data(), &numEntries);
     if (fileinfo == nullptr) {
-        return Status::InvalidArgument(fmt::format("hdfs list directory error {}", dir));
+        return Status::InvalidArgument(fmt::format("hdfs list directory error {}", relative_path));
     }
     for (int i = 0; i < numEntries && fileinfo; ++i) {
         // obj_key.data() + uri.key().size(), obj_key.size() - uri.key().size()
         int32_t dir_size;
-        if (dir[dir.size() - 1] == '/') {
-            dir_size = dir.size();
+        if (relative_path[relative_path.size() - 1] == '/') {
+            dir_size = relative_path.size();
         } else {
-            dir_size = dir.size() + 1;
+            dir_size = relative_path.size() + 1;
         }
         std::string_view name(fileinfo[i].mName + dir_size);
         if (!cb(name)) {
@@ -437,35 +439,36 @@ Status HdfsFileSystem::iterate_dir(const std::string& dir, const std::function<b
 
 Status HdfsFileSystem::iterate_dir2(const std::string& dir, const std::function<bool(DirEntry)>& cb) {
     std::string namenode;
-    RETURN_IF_ERROR(get_namenode_from_path(dir, &namenode));
+    std::string relative_path;
+    RETURN_IF_ERROR(get_namenode_from_path(dir, &namenode, &relative_path));
     std::shared_ptr<HdfsFsClient> hdfs_client;
     RETURN_IF_ERROR(HdfsFsCache::instance()->get_connection(namenode, hdfs_client, _options));
-    Status status = _path_exists(hdfs_client->hdfs_fs, dir);
+    Status status = _path_exists(hdfs_client->hdfs_fs, relative_path);
     if (!status.ok()) {
         return status;
     }
 
     hdfsFileInfo* fileinfo;
     int numEntries;
-    fileinfo = hdfsListDirectory(hdfs_client->hdfs_fs, dir.data(), &numEntries);
+    fileinfo = hdfsListDirectory(hdfs_client->hdfs_fs, relative_path.data(), &numEntries);
     if (fileinfo == nullptr) {
-        return Status::InvalidArgument(fmt::format("hdfs list directory error {}", dir));
+        return Status::InvalidArgument(fmt::format("hdfs list directory error {}", relative_path));
     }
     for (int i = 0; i < numEntries && fileinfo; ++i) {
         // obj_key.data() + uri.key().size(), obj_key.size() - uri.key().size()
         int32_t dir_size;
-        if (dir[dir.size() - 1] == '/') {
-            dir_size = dir.size();
+        if (relative_path[relative_path.size() - 1] == '/') {
+            dir_size = relative_path.size();
         } else {
-            dir_size = dir.size() + 1;
+            dir_size = relative_path.size() + 1;
         }
 
         const std::string local_fs("file:/");
-        if (dir.compare(0, local_fs.length(), local_fs) == 0) {
+        if (relative_path.compare(0, local_fs.length(), local_fs) == 0) {
             std::string mName(fileinfo[i].mName);
             std::size_t found = mName.rfind("/");
             if (found == std::string::npos) {
-                return Status::InvalidArgument(fmt::format("parse path fail {}", dir));
+                return Status::InvalidArgument(fmt::format("parse path fail {}", relative_path));
             }
 
             dir_size = found + 1;
@@ -498,17 +501,18 @@ StatusOr<std::unique_ptr<WritableFile>> HdfsFileSystem::new_writable_file(const 
 StatusOr<std::unique_ptr<WritableFile>> HdfsFileSystem::new_writable_file(const WritableFileOptions& opts,
                                                                           const std::string& path) {
     std::string namenode;
-    RETURN_IF_ERROR(get_namenode_from_path(path, &namenode));
+    std::string relative_path;
+    RETURN_IF_ERROR(get_namenode_from_path(path, &namenode, &relative_path));
     std::shared_ptr<HdfsFsClient> hdfs_client;
     RETURN_IF_ERROR(HdfsFsCache::instance()->get_connection(namenode, hdfs_client, _options));
     int flags = O_WRONLY;
     if (opts.mode == FileSystem::CREATE_OR_OPEN_WITH_TRUNCATE) {
-        if (auto st = _path_exists(hdfs_client->hdfs_fs, path); st.ok()) {
-            return Status::NotSupported(fmt::format("Cannot truncate a file by hdfs writer, path={}", path));
+        if (auto st = _path_exists(hdfs_client->hdfs_fs, relative_path); st.ok()) {
+            return Status::NotSupported(fmt::format("Cannot truncate a file by hdfs writer, path={}", relative_path));
         }
     } else if (opts.mode == MUST_CREATE) {
-        if (auto st = _path_exists(hdfs_client->hdfs_fs, path); st.ok()) {
-            return Status::AlreadyExist(path);
+        if (auto st = _path_exists(hdfs_client->hdfs_fs, relative_path); st.ok()) {
+            return Status::AlreadyExist(relative_path);
         }
     } else if (opts.mode == MUST_EXIST) {
         return Status::NotSupported("Open with MUST_EXIST not supported by hdfs writer");
@@ -533,22 +537,23 @@ StatusOr<std::unique_ptr<WritableFile>> HdfsFileSystem::new_writable_file(const 
         hdfs_write_buffer_size = _options.upload->__isset.hdfs_write_buffer_size_kb;
     }
 
-    hdfsFile file = hdfsOpenFile(hdfs_client->hdfs_fs, path.c_str(), flags, hdfs_write_buffer_size, 0, 0);
+    hdfsFile file = hdfsOpenFile(hdfs_client->hdfs_fs, relative_path.c_str(), flags, hdfs_write_buffer_size, 0, 0);
     if (file == nullptr) {
         if (errno == ENOENT) {
-            return Status::RemoteFileNotFound(fmt::format("hdfsOpenFile failed, file={}", path));
+            return Status::RemoteFileNotFound(fmt::format("hdfsOpenFile failed, file={}", relative_path));
         } else {
-            return Status::InternalError(fmt::format("hdfsOpenFile failed, file={}", path));
+            return Status::InternalError(fmt::format("hdfsOpenFile failed, file={}", relative_path));
         }
     }
-    return std::make_unique<HDFSWritableFile>(hdfs_client->hdfs_fs, file, path, 0);
+    return std::make_unique<HDFSWritableFile>(hdfs_client->hdfs_fs, file, relative_path, 0);
 }
 
 StatusOr<std::unique_ptr<SequentialFile>> HdfsFileSystem::new_sequential_file(const SequentialFileOptions& opts,
                                                                               const std::string& path) {
     (void)opts;
     std::string namenode;
-    RETURN_IF_ERROR(get_namenode_from_path(path, &namenode));
+    std::string relative_path;
+    RETURN_IF_ERROR(get_namenode_from_path(path, &namenode, &relative_path));
     std::shared_ptr<HdfsFsClient> hdfs_client;
     RETURN_IF_ERROR(HdfsFsCache::instance()->get_connection(namenode, hdfs_client, _options));
     // pass zero to hdfsOpenFile will use the default hdfs_read_buffer_size
@@ -560,15 +565,16 @@ StatusOr<std::unique_ptr<SequentialFile>> HdfsFileSystem::new_sequential_file(co
         hdfs_read_buffer_size = _options.download->hdfs_read_buffer_size_kb;
     }
 
-    auto handle = std::make_unique<GetHdfsFileReadOnlyHandle>(path, hdfs_read_buffer_size);
-    auto stream = std::make_shared<HdfsInputStream>(hdfs_client->hdfs_fs, std::move(handle), path);
-    return std::make_unique<SequentialFile>(std::move(stream), path);
+    auto handle = std::make_unique<GetHdfsFileReadOnlyHandle>(relative_path, hdfs_read_buffer_size);
+    auto stream = std::make_shared<HdfsInputStream>(hdfs_client->hdfs_fs, std::move(handle), relative_path);
+    return std::make_unique<SequentialFile>(std::move(stream), relative_path);
 }
 
 StatusOr<std::unique_ptr<RandomAccessFile>> HdfsFileSystem::new_random_access_file(const RandomAccessFileOptions& opts,
                                                                                    const std::string& path) {
     std::string namenode;
-    RETURN_IF_ERROR(get_namenode_from_path(path, &namenode));
+    std::string relative_path;
+    RETURN_IF_ERROR(get_namenode_from_path(path, &namenode, &relative_path));
     std::shared_ptr<HdfsFsClient> hdfs_client;
     RETURN_IF_ERROR(HdfsFsCache::instance()->get_connection(namenode, hdfs_client, _options));
     // pass zero to hdfsOpenFile will use the default hdfs_read_buffer_size
@@ -579,17 +585,18 @@ StatusOr<std::unique_ptr<RandomAccessFile>> HdfsFileSystem::new_random_access_fi
     if (_options.download != nullptr && _options.download->__isset.hdfs_read_buffer_size_kb) {
         hdfs_read_buffer_size = _options.download->hdfs_read_buffer_size_kb;
     }
-    auto handle = std::make_unique<GetHdfsFileReadOnlyHandle>(path, hdfs_read_buffer_size);
-    auto stream = std::make_shared<HdfsInputStream>(hdfs_client->hdfs_fs, std::move(handle), path);
-    return std::make_unique<RandomAccessFile>(std::move(stream), path);
+    auto handle = std::make_unique<GetHdfsFileReadOnlyHandle>(relative_path, hdfs_read_buffer_size);
+    auto stream = std::make_shared<HdfsInputStream>(hdfs_client->hdfs_fs, std::move(handle), relative_path);
+    return std::make_unique<RandomAccessFile>(std::move(stream), relative_path);
 }
 
 Status HdfsFileSystem::rename_file(const std::string& src, const std::string& target) {
     std::string namenode;
-    RETURN_IF_ERROR(get_namenode_from_path(src, &namenode));
+    std::string relative_path;
+    RETURN_IF_ERROR(get_namenode_from_path(src, &namenode, &relative_path));
     std::shared_ptr<HdfsFsClient> hdfs_client;
     RETURN_IF_ERROR(HdfsFsCache::instance()->get_connection(namenode, hdfs_client, _options));
-    int ret = hdfsRename(hdfs_client->hdfs_fs, src.data(), target.data());
+    int ret = hdfsRename(hdfs_client->hdfs_fs, relative_path.data(), target.data());
     if (ret != 0) {
         return Status::InvalidArgument(fmt::format("rename file from {} to {} error", src, target));
     }

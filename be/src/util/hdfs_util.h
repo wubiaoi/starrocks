@@ -22,6 +22,6 @@ namespace starrocks {
 
 std::string get_hdfs_err_msg();
 
-Status get_namenode_from_path(const std::string& path, std::string* namenode);
+Status get_namenode_from_path(const std::string& path, std::string* namenode, std::string* relative_path);
 
 } // namespace starrocks
