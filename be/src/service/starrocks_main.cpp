@@ -346,6 +346,7 @@ int main(int argc, char** argv) {
             starrocks::config::block_cache_engine = "cachelib";
 #endif
         }
+        cache_options.enable_page_cache = starrocks::config::block_cache_page_cache_enable;
         cache_options.meta_path = starrocks::config::block_cache_meta_path;
         cache_options.block_size = starrocks::config::block_cache_block_size;
         cache_options.checksum = starrocks::config::block_cache_checksum_enable;

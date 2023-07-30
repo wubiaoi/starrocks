@@ -166,8 +166,21 @@ elif [[ -z ${WITH_CACHELIB} ]]; then
     WITH_CACHELIB=OFF
 fi
 
+if [[ "${MACHINE_TYPE}" == "aarch64" ]]; then
+    # Force turn off starcache on arm platform
+    # We will support starcache on arm platform soon
+    WITH_STARCACHE=OFF
+elif [[ -z ${WITH_STARCACHE} ]]; then
+    WITH_STARCACHE=ON
+fi
+
 if [[ "${WITH_CACHELIB}" == "ON" && ! -f ${STARROCKS_THIRDPARTY}/installed/cachelib/lib/libcachelib_allocator.a ]]; then
     echo "WITH_CACHELIB=ON but missing depdency libraries(cachelib)"
+    exit 1
+fi
+
+if [[ "${WITH_STARCACHE}" == "ON" && ! -f ${STARROCKS_THIRDPARTY}/installed/lib/libstarcache.a ]]; then
+    echo "WITH_STARCACHE=ON but missing depdency libraries(starcache)"
     exit 1
 fi
 
@@ -330,8 +343,9 @@ if [ ${BUILD_BE} -eq 1 ] ; then
                   -DWITH_BENCH=${WITH_BENCH}                            \
                   -DWITH_COMPRESS=${WITH_COMPRESS}                      \
                   -DWITH_CACHELIB=${WITH_CACHELIB}                      \
+                  -DWITH_STARCACHE=${WITH_STARCACHE}                    \
                   -DUSE_STAROS=${USE_STAROS}                            \
-                  -DWITH_STARCACHE=${USE_STAROS}                        \
+                  -DENABLE_FAULT_INJECTION=${ENABLE_FAULT_INJECTION}    \
                   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON  ..
 
     time ${BUILD_SYSTEM} -j${PARALLEL}
