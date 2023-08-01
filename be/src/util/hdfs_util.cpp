@@ -48,7 +48,7 @@ std::string get_hdfs_err_msg() {
 
 Status get_namenode_from_path(const std::string& path, std::string* namenode, std::string* relative_path) {
     const std::string local_fs("file:/");
-    const std::string view_fs("viewfs://hadoop-meituan");
+    const std::string view_fs("viewfs://hadoop-meituan/");
     auto n = path.find("://");
 
     if (n == std::string::npos) {
@@ -65,17 +65,23 @@ Status get_namenode_from_path(const std::string& path, std::string* namenode, st
     } else {
         // Path is qualified, i.e. "scheme://authority/path/to/file".  Extract
         // "scheme://authority/".
-        n = path.find('/', n + 4);
+        n = path.find('/', n + 3);
         if (n == std::string::npos) {
             return Status::InvalidArgument(strings::Substitute("Path missing '/' after authority: $0", path));
         } else {
             auto viewfs_pos = path.find(view_fs);
             if (viewfs_pos == std::string::npos) {
                 *relative_path = path;
+                *namenode = path.substr(0, n + 1);
             } else {
-                *relative_path = path.substr(viewfs_pos + view_fs.length());
+                *relative_path = path.substr(viewfs_pos + view_fs.length() - 1);
+                n = path.find("/", viewfs_pos + view_fs.length());
+                if (n == std::string::npos) {
+                    return Status::InvalidArgument(strings::Substitute("Path missing '/' after authority: $0", path));
+                } else {
+                    *namenode = path.substr(0, n);
+                }
             }
-            *namenode = path.substr(0, n + 1) + fs_rand_key();
         }
     }
     return Status::OK();
