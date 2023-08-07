@@ -79,7 +79,7 @@ public class PipeFileRecord {
         record.fileSize = file.getLen();
         if (file instanceof S3AFileStatus) {
             S3AFileStatus s3File = (S3AFileStatus) file;
-            record.fileVersion = s3File.getEtag();
+            //record.fileVersion = s3File.getEtag();
         } else {
             record.fileVersion = String.valueOf(file.getModificationTime());
         }

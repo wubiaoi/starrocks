@@ -21,9 +21,6 @@ import com.starrocks.connector.ConnectorMetadata;
 import com.starrocks.connector.exception.StarRocksConnectorException;
 import com.starrocks.credential.CloudConfiguration;
 import com.starrocks.credential.CloudConfigurationFactory;
-import com.starrocks.credential.CloudType;
-import com.starrocks.credential.aws.AWSCloudConfiguration;
-import com.starrocks.credential.aws.AWSCloudCredential;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.paimon.catalog.Catalog;
@@ -75,22 +72,6 @@ public class PaimonConnector implements Connector {
             throw new StarRocksConnectorException("The property %s must be set.", PAIMON_CATALOG_WAREHOUSE);
         }
         paimonOptions.setString(WAREHOUSE.key(), warehousePath);
-
-        if (this.cloudConfiguration.getCloudType() == CloudType.AWS && this.cloudConfiguration instanceof AWSCloudConfiguration) {
-            AWSCloudConfiguration awsCloudConfiguration = (AWSCloudConfiguration) this.cloudConfiguration;
-            paimonOptions.set("s3.connection.ssl.enabled", String.valueOf(awsCloudConfiguration.getEnableSSL()));
-            paimonOptions.set("s3.path.style.access", String.valueOf(awsCloudConfiguration.getEnablePathStyleAccess()));
-            AWSCloudCredential awsCloudCredential = awsCloudConfiguration.getAWSCloudCredential();
-            if (!awsCloudCredential.getEndpoint().isEmpty()) {
-                paimonOptions.set("s3.endpoint", awsCloudCredential.getEndpoint());
-            }
-            if (!awsCloudCredential.getAccessKey().isEmpty()) {
-                paimonOptions.set("s3.access-key", awsCloudCredential.getAccessKey());
-            }
-            if (!awsCloudCredential.getSecretKey().isEmpty()) {
-                paimonOptions.set("s3.secret-key", awsCloudCredential.getSecretKey());
-            }
-        }
     }
 
     public Options getPaimonOptions() {
