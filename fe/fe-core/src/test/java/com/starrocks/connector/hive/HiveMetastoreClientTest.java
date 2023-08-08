@@ -18,7 +18,6 @@ import com.starrocks.common.ExceptionChecker;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.Mocked;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -45,7 +44,7 @@ public class HiveMetastoreClientTest {
             }
         };
 
-        Configuration configuration = new HiveConf();
+        HiveConf configuration = new HiveConf();
         configuration.set("metastore.thrift.uris", "thrift://127.0.0.1:1234");
         HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(configuration);
         ExceptionChecker.expectThrowsWithMsg(NoSuchObjectException.class,
