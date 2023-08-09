@@ -109,6 +109,7 @@ public class HiveMetastore implements IHiveMetastore {
             if (table.getTableType().equalsIgnoreCase("VIRTUAL_VIEW")) {
                 return HiveMetastoreApiConverter.toHiveView(table, catalogName);
             } else {
+                RemoteFileInputFormat.fromHdfsInputFormatClass(sd.getInputFormat());
                 return HiveMetastoreApiConverter.toHiveTable(table, catalogName);
             }
         } else {
