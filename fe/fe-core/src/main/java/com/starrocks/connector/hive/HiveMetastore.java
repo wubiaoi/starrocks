@@ -17,7 +17,6 @@ package com.starrocks.connector.hive;
 
 import com.google.common.collect.ImmutableMap;
 import com.starrocks.catalog.Database;
-import com.starrocks.catalog.HiveMetaStoreTable;
 import com.starrocks.catalog.HiveTable;
 import com.starrocks.catalog.Table;
 import com.starrocks.common.Config;
@@ -40,7 +39,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.starrocks.connector.hive.HiveMetastoreApiConverter.toHiveCommonStats;
 import static com.starrocks.connector.hive.HiveMetastoreApiConverter.toMetastoreApiTable;
 import static com.starrocks.connector.hive.HiveMetastoreApiConverter.validateHiveTableType;
@@ -190,33 +188,7 @@ public class HiveMetastore implements IHiveMetastore {
     }
 
     public Map<String, HivePartitionStats> getPartitionStatistics(Table table, List<String> partitionNames) {
-        HiveMetaStoreTable hmsTbl = (HiveMetaStoreTable) table;
-        String dbName = hmsTbl.getDbName();
-        String tblName = hmsTbl.getTableName();
-        List<String> dataColumns = hmsTbl.getDataColumnNames();
-        Map<String, Partition> partitions = getPartitionsByNames(hmsTbl.getDbName(), hmsTbl.getTableName(), partitionNames);
-
-        Map<String, HiveCommonStats> partitionCommonStats = partitions.entrySet().stream()
-                .collect(toImmutableMap(Map.Entry::getKey, entry -> toHiveCommonStats(entry.getValue().getParameters())));
-
-        Map<String, Long> partitionRowNums = partitionCommonStats.entrySet().stream()
-                .collect(toImmutableMap(Map.Entry::getKey, entry -> entry.getValue().getRowNums()));
-
-        ImmutableMap.Builder<String, HivePartitionStats> resultBuilder = ImmutableMap.builder();
-        Map<String, List<ColumnStatisticsObj>> partitionNameToColumnStatsObj =
-                client.getPartitionColumnStats(dbName, tblName, partitionNames, dataColumns);
-
-        Map<String, Map<String, HiveColumnStats>> partitionColumnStats = HiveMetastoreApiConverter
-                .toPartitionColumnStatistics(partitionNameToColumnStatsObj, partitionRowNums);
-
-        for (String partitionName : partitionCommonStats.keySet()) {
-            HiveCommonStats commonStats = partitionCommonStats.get(partitionName);
-            Map<String, HiveColumnStats> columnStatistics = partitionColumnStats
-                    .getOrDefault(partitionName, ImmutableMap.of());
-            resultBuilder.put(partitionName, new HivePartitionStats(commonStats, columnStatistics));
-        }
-
-        return resultBuilder.build();
+        return ImmutableMap.of();
     }
 
     public long getCurrentEventId() {
